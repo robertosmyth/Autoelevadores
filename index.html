@@ -1319,9 +1319,15 @@ const SB={
     const t=await r.text();
     return t?JSON.parse(t):null;
   },
-  // Trae todas las filas de una tabla
+  // Trae filas de una tabla. Acepta que "tabla" ya incluya parámetros
+  // (ej. "expedientes?select=id,data" o "usuarios?dni=eq.123"): en ese
+  // caso no vuelve a agregar ?select=* para no romper la URL.
   async selectAll(tabla){
-    return await this._req('GET',tabla+'?select=*')||[];
+    const tieneParams=tabla.includes('?');
+    const tieneSelect=/[?&]select=/.test(tabla);
+    let path=tabla;
+    if(!tieneSelect)path+=(tieneParams?'&':'?')+'select=*';
+    return await this._req('GET',path)||[];
   },
   // Inserta o actualiza (upsert por clave primaria)
   async upsert(tabla,fila){
